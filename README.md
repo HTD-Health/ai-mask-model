@@ -2,7 +2,7 @@
 ## Raspberry Pi 3
 ### Remote access
 We are using `Dataplicity` for remote access to Raspberry Pi.
-If you want to have access to Raspberry Pi for test purposes send your email address and request to be added to Jędrzej Polaczek.
+If you want to have access to Raspberry Pi for test purposes send your email address and request to be added to [Jędrzej Polaczek](https://github.com/jedrzejpolaczek).
 ### How to use
 #### Repository
 Repository is under path `home/pi/Workplace/ai-smart-mirror`
