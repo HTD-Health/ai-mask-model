@@ -8,7 +8,7 @@
 ```
 ├── mask_detector
 │   ├── data                        <- All your data modules should be located here!
-│   │   ├── example_datamodule      <- Each datamodule should be located in separate folder!
+│   │   ├── dataset                 <- Whole dataset
 │   │   │   ├── mask                <- Part of the dataset containing properly masked faces
 │   │   │   │   ├── 00000           <- Dataset chunk containing images
 │   │   │   │   │   ├── 00001.jpg   <- Image
@@ -23,7 +23,7 @@
 │   │   │       │   └── ...
 │   │   │       ├── 01000
 │   │   │       └── ...
-│   │   └── dataframe
+│   │   └── dataframe               <- Place to store generated dataframes
 │   └── ...
 └── ...
 
