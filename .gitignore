@@ -1,0 +1,17 @@
+# Dataset
+data/
+
+# Environment
+venv/
+
+# Logs
+lightning_logs/
+
+# IDEs
+.vscode
+
+# Cache
+__pycache__
+
+# Other
+.DS_Store
