@@ -1,9 +1,12 @@
 from argparse import ArgumentParser
 
+import torch
 from torch.nn.functional import binary_cross_entropy
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 from pytorch_lightning import LightningModule, Trainer, seed_everything
+from pytorch_lightning.callbacks import ModelCheckpoint
+from sklearn.metrics import accuracy_score
 
 from model import BasicCNN
 from dataset import MaskDataset
@@ -36,16 +39,16 @@ class MaskClassifier(LightningModule):
 
         self.log('valid_loss', loss, on_step=True)
 
-        return loss
-
     def test_step(self, batch, batch_idx):
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
 
-        self.log('test_loss', loss)
+        _, out = torch.max(out, dim=1)
+        val_acc = accuracy_score(out.cpu(), y.cpu())
+        val_acc = torch.tensor(val_acc)
 
-        return loss
+        return {'test_loss': loss, 'test_acc': val_acc}
 
     def configure_optimizers(self):
         # self.hparams available because we called self.save_hyperparameters()
@@ -75,7 +78,12 @@ def cli_main():
     # ------------
     # training
     # ------------
-    trainer = Trainer(max_epochs=1)
+    checkpoint_callback = ModelCheckpoint(
+        verbose=True,
+        monitor='test_acc',
+        mode='max'
+    )
+    trainer = Trainer(max_epochs=1, checkpoint_callback=checkpoint_callback)
     trainer.fit(model, train_loader, val_loader)
 
     # ------------

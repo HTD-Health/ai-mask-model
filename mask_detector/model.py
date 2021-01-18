@@ -24,14 +24,9 @@ class BasicCNN(Module):
         )
 
     def forward(self, x):
-        print(x.size())
         x = self.convLayers1(x)
-        print(x.shape)
         x = self.convLayers2(x)
-        print(x.shape)
         x = x.view(-1, 64*8*8)
-        print(x.shape)
         x = self.linearLayers(x)
-        print(x.shape)
 
         return x
