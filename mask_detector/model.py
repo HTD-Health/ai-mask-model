@@ -17,16 +17,26 @@ class BasicCNN(Module):
             MaxPool2d(kernel_size=(2, 2))
         )
 
+        self.convLayers3 = Sequential(
+            Conv2d(64, 128, kernel_size=(3, 3), padding=(1, 1)),
+            ReLU(),
+            MaxPool2d(kernel_size=(2, 2))
+        )
+
         self.linearLayers = Sequential(
-            Linear(in_features=64*8*8, out_features=1024),
-            Softmax(),
-            Linear(in_features=1024, out_features=1)
+            Linear(in_features=128*25*25, out_features=2048),
+            ReLU(),
+            Linear(in_features=2048, out_features=1024),
+            ReLU(),
+            Linear(in_features=1024, out_features=1),
+            Softmax()
         )
 
     def forward(self, x):
         x = self.convLayers1(x)
         x = self.convLayers2(x)
-        x = x.view(-1, 64*8*8)
+        x = self.convLayers3(x)
+        x = x.view(-1, 128*25*25)
         x = self.linearLayers(x)
 
         return x
