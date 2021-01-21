@@ -3,9 +3,20 @@ import os
 import pandas as pd
 from pathlib import Path
 from tqdm import tqdm
+from PIL import Image
 
 DATASET_PATH = Path('./data/dataset')
 CATEGORIES = {'no_mask': 0, 'mask': 1}
+
+
+def verify_image(img_path):
+    try:
+        img = Image.open(img_path)
+        img.verify()
+
+        return True
+    except IOError:
+        return False
 
 
 def prepare_data():
@@ -17,10 +28,11 @@ def prepare_data():
 
         for images_directory in tqdm(list(path.iterdir())):
             for img_path in images_directory.iterdir():
-                dataset_list.append({
-                    'image': str(img_path),
-                    'mask': mask  # 0 - no_mask, 1 - mask
-                })
+                if verify_image(img_path):
+                    dataset_list.append({
+                        'image': str(img_path),
+                        'mask': mask  # 0 - no_mask, 1 - mask
+                    })
 
     return pd.DataFrame(dataset_list)
 
