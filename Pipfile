@@ -14,6 +14,8 @@ scikit-learn = "==0.24.0"
 opencv-python = "==4.5.1.48"
 
 [dev-packages]
+autopep8 = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.9"
