@@ -5,6 +5,7 @@ from torch.nn.functional import binary_cross_entropy
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 from pytorch_lightning import LightningModule, Trainer, seed_everything
+from pytorch_lightning.metrics import Accuracy
 from pytorch_lightning.callbacks import ModelCheckpoint
 from sklearn.metrics import accuracy_score
 
@@ -16,8 +17,9 @@ from utils import train_val_test_split
 class MaskClassifier(LightningModule):
     def __init__(self, net, learning_rate=1e-3):
         super().__init__()
-        self.save_hyperparameters()
         self.net = net
+        self.learning_rate = learning_rate
+        self.accuracy = Accuracy()
 
     def forward(self, x):
         return self.net(x)
@@ -25,34 +27,27 @@ class MaskClassifier(LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         out = self.net(x)
-
         loss = binary_cross_entropy(out, y)
 
-        self.log('train_loss', loss, on_epoch=True)
-
-        return loss
+        return {'loss': loss, 'accuracy': self.accuracy(out, y)}
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
 
-        self.log('valid_loss', loss, on_step=True)
+        return {'loss': loss, 'accuracy': self.accuracy(out, y)}
 
     def test_step(self, batch, batch_idx):
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
 
-        _, out = torch.max(out, dim=1)
-        val_acc = accuracy_score(out.cpu(), y.cpu())
-        val_acc = torch.tensor(val_acc)
-
-        return {'test_loss': loss, 'test_acc': val_acc}
+        return {'loss': loss, 'accuracy': self.accuracy(out, y)}
 
     def configure_optimizers(self):
         # self.hparams available because we called self.save_hyperparameters()
-        return Adam(self.parameters(), lr=self.hparams.learning_rate)
+        return Adam(self.parameters(), lr=self.learning_rate)
 
 
 def cli_main():
@@ -65,9 +60,9 @@ def cli_main():
     ds_train, ds_validate, ds_test = train_val_test_split(
         dataset, train_ratio=0.8, validate_ratio=0.1, test_ratio=0.1)
 
-    train_loader = DataLoader(ds_train, batch_size=128)
-    val_loader = DataLoader(ds_validate, batch_size=128)
-    test_loader = DataLoader(ds_test, batch_size=128)
+    train_loader = DataLoader(ds_train, batch_size=32)
+    val_loader = DataLoader(ds_validate, batch_size=32)
+    test_loader = DataLoader(ds_test, batch_size=32)
 
     # ------------
     # model
@@ -78,12 +73,9 @@ def cli_main():
     # ------------
     # training
     # ------------
-    checkpoint_callback = ModelCheckpoint(
-        verbose=True,
-        monitor='test_acc',
-        mode='max'
-    )
-    trainer = Trainer(max_epochs=1, checkpoint_callback=checkpoint_callback)
+    gpus = 1 if torch.cuda.is_available() else 0
+
+    trainer = Trainer(gpus=gpus, max_epochs=3)
     trainer.fit(model, train_loader, val_loader)
 
     # ------------

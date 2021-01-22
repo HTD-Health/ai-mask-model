@@ -9,7 +9,7 @@ from torchvision.transforms import Compose, Resize, ToPILImage, ToTensor
 
 
 class MaskDataset(Dataset):
-    def __init__(self, csv_file, image_size=100):
+    def __init__(self, csv_file, image_size=32):
         self.dataFrame = pd.read_csv(csv_file)
 
         self.transform = Compose([
