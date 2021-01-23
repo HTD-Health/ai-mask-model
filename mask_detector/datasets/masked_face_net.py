@@ -8,14 +8,14 @@ from torch.utils.data.dataset import Dataset
 from torchvision.transforms import Compose, Resize, ToPILImage, ToTensor
 
 
-class MaskDataset(Dataset):
+class MaskedFaceNetDataset(Dataset):
     def __init__(self, csv_file, image_size=32):
         self.dataFrame = pd.read_csv(csv_file)
 
         self.transform = Compose([
             ToPILImage(),
             Resize((image_size, image_size)),
-            ToTensor(),  # [0, 1] | [no_mask, mask]
+            ToTensor()
         ])
 
     def __getitem__(self, key):

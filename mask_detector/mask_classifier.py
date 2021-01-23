@@ -9,9 +9,9 @@ from pytorch_lightning.metrics import Accuracy
 from pytorch_lightning.callbacks import ModelCheckpoint
 from sklearn.metrics import accuracy_score
 
-from model import BasicCNN
-from dataset import MaskDataset
 from utils import train_val_test_split
+from models.basic_cnn import BasicCNN
+from datasets.masked_face_net import MaskedFaceNetDataset
 
 
 class MaskClassifier(LightningModule):
@@ -71,7 +71,7 @@ def cli_main():
     # ------------
     # data
     # ------------
-    dataset = MaskDataset(csv_file='data/dataframe/mask_df.csv')
+    dataset = MaskedFaceNetDataset(csv_file='data/dataframe/mask_df.csv')
     ds_train, ds_validate, ds_test = train_val_test_split(
         dataset, train_ratio=0.8, validate_ratio=0.1, test_ratio=0.1)
 
