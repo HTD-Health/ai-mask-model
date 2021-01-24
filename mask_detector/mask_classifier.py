@@ -11,6 +11,7 @@ from sklearn.metrics import accuracy_score
 
 from utils import train_val_test_split
 from models.basic_cnn import BasicCNN
+from models.mobile_net_v2 import MobileNetV2
 from datasets.masked_face_net import MaskedFaceNetDataset
 
 
@@ -63,7 +64,10 @@ def cli_main():
     # args
     # ------------
     parser = ArgumentParser()
+
     parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--image_size', default=120, type=int)
+
     parser = Trainer.add_argparse_args(parser)
     parser = MaskClassifier.add_model_specific_args(parser)
     args = parser.parse_args()
@@ -71,7 +75,8 @@ def cli_main():
     # ------------
     # data
     # ------------
-    dataset = MaskedFaceNetDataset(csv_file='data/dataframe/mask_df.csv')
+    dataset = MaskedFaceNetDataset(
+        csv_file='data/dataframe/mask_df.csv', image_size=args.image_size)
     ds_train, ds_validate, ds_test = train_val_test_split(
         dataset, train_ratio=0.8, validate_ratio=0.1, test_ratio=0.1)
 
@@ -82,7 +87,7 @@ def cli_main():
     # ------------
     # model
     # ------------
-    net = BasicCNN()
+    net = MobileNetV2()
     model = MaskClassifier(net, learning_rate=args.learning_rate)
 
     # ------------
