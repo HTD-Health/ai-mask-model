@@ -1,4 +1,4 @@
-from torch.nn import Dropout, Module, Conv2d, Flatten, Linear, MaxPool2d, ReLU, Sequential, Softmax, Flatten
+from torch.nn import Dropout, Module, Conv2d, Flatten, Linear, MaxPool2d, ReLU, Sequential, Sigmoid, Softmax, Flatten
 
 
 class BasicCNN(Module):
@@ -31,7 +31,7 @@ class BasicCNN(Module):
             Linear(in_features=128*15*15, out_features=1024),
             ReLU(),
             Linear(in_features=1024, out_features=1),
-            Softmax(dim=1)
+            Sigmoid()
         )
 
     def forward(self, x):
