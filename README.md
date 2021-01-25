@@ -1,4 +1,4 @@
-# ai-mask-model
+# Model
 
 ## Data preparation
 
