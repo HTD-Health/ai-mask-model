@@ -1,4 +1,4 @@
-# ai-smart-mirror
+# ai-mask-model
 
 ## Data preparation
 
