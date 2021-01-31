@@ -5,7 +5,7 @@ from torch.nn.functional import binary_cross_entropy
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 from pytorch_lightning import LightningModule, Trainer, seed_everything
-from pytorch_lightning.metrics import Accuracy
+from pytorch_lightning.metrics import Accuracy, Recall
 from pytorch_lightning.callbacks import ModelCheckpoint
 from sklearn.metrics import accuracy_score
 
@@ -20,7 +20,7 @@ class MaskClassifier(LightningModule):
         super().__init__()
         self.net = net
         self.learning_rate = learning_rate
-        self.accuracy = Accuracy()
+        self.recall = Recall()
 
     def forward(self, x):
         return self.net(x)
@@ -29,22 +29,34 @@ class MaskClassifier(LightningModule):
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
+        recall = self.recall(out, y)
 
-        return {'loss': loss, 'accuracy': self.accuracy(out, y)}
+        self.log('train_loss', recall, on_step=False, on_epoch=True)
+        self.log('train_recall', recall, on_step=False, on_epoch=True)
+
+        return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
+        recall = self.recall(out, y)
 
-        return {'loss': loss, 'accuracy': self.accuracy(out, y)}
+        self.log('val_loss', recall, on_step=False, on_epoch=True)
+        self.log('val_recall', recall, on_step=False, on_epoch=True)
+
+        return loss
 
     def test_step(self, batch, batch_idx):
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
+        recall = self.recall(out, y)
 
-        return {'loss': loss, 'accuracy': self.accuracy(out, y)}
+        self.log('test_loss', recall, on_step=False, on_epoch=True)
+        self.log('test_recall', recall, on_step=False, on_epoch=True)
+
+        return loss
 
     def configure_optimizers(self):
         # self.hparams available because we called self.save_hyperparameters()
@@ -94,7 +106,7 @@ def cli_main():
     # training
     # ------------
     trainer = Trainer.from_argparse_args(args)
-    trainer.fit(model, train_loader, val_loader)
+    result = trainer.fit(model, train_loader, val_loader)
 
     # ------------
     # testing
