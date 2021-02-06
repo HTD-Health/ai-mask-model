@@ -21,10 +21,10 @@ class MobileNetV2(Module):
             Sigmoid()
         )
 
-    def forward(self, x):
+    def forward(self, output):
         with torch.no_grad():
-            x = self.features(x)
+            output = self.features(output)
 
-        x = self.classifier(x)
+        output = self.classifier(output)
 
-        return x
+        return output
