@@ -30,7 +30,7 @@ class MaskClassifier(LightningModule):
         loss = binary_cross_entropy(out, y)
         recall = self.recall(out, y)
 
-        self.log('train_loss', recall, on_step=False, on_epoch=True)
+        self.log('train_loss', loss, on_step=False, on_epoch=True)
         self.log('train_recall', recall, on_step=False, on_epoch=True)
 
         return loss
@@ -41,7 +41,7 @@ class MaskClassifier(LightningModule):
         loss = binary_cross_entropy(out, y)
         recall = self.recall(out, y)
 
-        self.log('val_loss', recall, on_step=False, on_epoch=True)
+        self.log('val_loss', loss, on_step=False, on_epoch=True)
         self.log('val_recall', recall, on_step=False, on_epoch=True)
 
         return loss
@@ -52,7 +52,7 @@ class MaskClassifier(LightningModule):
         loss = binary_cross_entropy(out, y)
         recall = self.recall(out, y)
 
-        self.log('test_loss', recall, on_step=False, on_epoch=True)
+        self.log('test_loss', loss, on_step=False, on_epoch=True)
         self.log('test_recall', recall, on_step=False, on_epoch=True)
 
         return loss
@@ -64,7 +64,7 @@ class MaskClassifier(LightningModule):
     @staticmethod
     def add_model_specific_args(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument('--learning_rate', type=float, default=1e-3)
+        parser.add_argument('--learning_rate', type=float, default=0.001)
         return parser
 
 
