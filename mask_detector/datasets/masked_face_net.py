@@ -12,7 +12,7 @@ from torchvision.transforms import CenterCrop, Compose, Normalize, Resize, ToPIL
 
 class MaskedFaceNetDataset(Dataset):
     def __init__(self, csv_file, image_size):
-        self.dataFrame = pd.read_csv(csv_file)
+        self.data_frame = pd.read_csv(csv_file)
 
         self.transform = Compose([
             Resize(image_size),  # for MobileNetV2 - set image size to 256
@@ -22,7 +22,7 @@ class MaskedFaceNetDataset(Dataset):
         ])
 
     def __getitem__(self, key):
-        row = self.dataFrame.iloc[key]
+        row = self.data_frame.iloc[key]
 
         mask = torch.tensor([row['mask']], dtype=torch.float)
         image = Image.open(row['image'])
@@ -30,4 +30,4 @@ class MaskedFaceNetDataset(Dataset):
         return self.transform(image), mask
 
     def __len__(self):
-        return len(self.dataFrame.index)
+        return len(self.data_frame)

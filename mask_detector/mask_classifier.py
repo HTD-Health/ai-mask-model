@@ -5,9 +5,8 @@ from torch.nn.functional import binary_cross_entropy
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 from pytorch_lightning import LightningModule, Trainer, seed_everything
-from pytorch_lightning.metrics import Accuracy, Recall
+from pytorch_lightning.metrics import Recall
 from pytorch_lightning.callbacks import ModelCheckpoint
-from sklearn.metrics import accuracy_score
 
 from utils import train_val_test_split
 from models.basic_cnn import BasicCNN
@@ -16,7 +15,7 @@ from datasets.masked_face_net import MaskedFaceNetDataset
 
 
 class MaskClassifier(LightningModule):
-    def __init__(self, net, learning_rate=1e-3):
+    def __init__(self, net, learning_rate=0.001):
         super().__init__()
         self.net = net
         self.learning_rate = learning_rate

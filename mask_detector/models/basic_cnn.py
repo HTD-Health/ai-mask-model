@@ -34,9 +34,10 @@ class BasicCNN(Module):
             Sigmoid()
         )
 
-    def forward(self, x):
-        x = self.convLayers1(x)
-        x = self.convLayers2(x)
-        x = self.convLayers3(x)
-        x = self.linearLayers(x)
-        return x
+    def forward(self, output):
+        output = self.convLayers1(output)
+        output = self.convLayers2(output)
+        output = self.convLayers3(output)
+        output = self.linearLayers(output)
+
+        return output
