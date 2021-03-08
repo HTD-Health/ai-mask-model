@@ -3,6 +3,7 @@ data/
 
 # Environment
 venv/
+.venv/
 
 # Logs
 lightning_logs/
