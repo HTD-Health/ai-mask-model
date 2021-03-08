@@ -5,19 +5,21 @@ from torch.nn.functional import binary_cross_entropy
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 from pytorch_lightning import LightningModule, Trainer, seed_everything
+from pytorch_lightning.metrics import Recall
 from pytorch_lightning.callbacks import ModelCheckpoint
-from sklearn.metrics import accuracy_score
 
-from model import BasicCNN
-from dataset import MaskDataset
 from utils import train_val_test_split
+from models.basic_cnn import BasicCNN
+from models.mobile_net_v2 import MobileNetV2
+from datasets.masked_face_net import MaskedFaceNetDataset
 
 
 class MaskClassifier(LightningModule):
-    def __init__(self, net, learning_rate=1e-3):
+    def __init__(self, net, learning_rate=0.001):
         super().__init__()
-        self.save_hyperparameters()
         self.net = net
+        self.learning_rate = learning_rate
+        self.recall = Recall()
 
     def forward(self, x):
         return self.net(x)
@@ -25,10 +27,11 @@ class MaskClassifier(LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         out = self.net(x)
-
         loss = binary_cross_entropy(out, y)
+        recall = self.recall(out, y)
 
-        self.log('train_loss', loss, on_epoch=True)
+        self.log('train_loss', loss, on_step=False, on_epoch=True)
+        self.log('train_recall', recall, on_step=False, on_epoch=True)
 
         return loss
 
@@ -36,55 +39,73 @@ class MaskClassifier(LightningModule):
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
+        recall = self.recall(out, y)
 
-        self.log('valid_loss', loss, on_step=True)
+        self.log('val_loss', loss, on_step=False, on_epoch=True)
+        self.log('val_recall', recall, on_step=False, on_epoch=True)
+
+        return loss
 
     def test_step(self, batch, batch_idx):
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
+        recall = self.recall(out, y)
 
-        _, out = torch.max(out, dim=1)
-        val_acc = accuracy_score(out.cpu(), y.cpu())
-        val_acc = torch.tensor(val_acc)
+        self.log('test_loss', loss, on_step=False, on_epoch=True)
+        self.log('test_recall', recall, on_step=False, on_epoch=True)
 
-        return {'test_loss': loss, 'test_acc': val_acc}
+        return loss
 
     def configure_optimizers(self):
         # self.hparams available because we called self.save_hyperparameters()
-        return Adam(self.parameters(), lr=self.hparams.learning_rate)
+        return Adam(self.parameters(), lr=self.learning_rate)
+
+    @staticmethod
+    def add_model_specific_args(parent_parser):
+        parser = ArgumentParser(parents=[parent_parser], add_help=False)
+        parser.add_argument('--learning_rate', type=float, default=0.001)
+        return parser
 
 
 def cli_main():
     seed_everything(1234)
 
     # ------------
+    # args
+    # ------------
+    parser = ArgumentParser()
+
+    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--image_size', default=120, type=int)
+
+    parser = Trainer.add_argparse_args(parser)
+    parser = MaskClassifier.add_model_specific_args(parser)
+    args = parser.parse_args()
+
+    # ------------
     # data
     # ------------
-    dataset = MaskDataset(csv_file='data/dataframe/mask_df.csv')
+    dataset = MaskedFaceNetDataset(
+        csv_file='data/dataframe/mask_df.csv', image_size=args.image_size)
     ds_train, ds_validate, ds_test = train_val_test_split(
         dataset, train_ratio=0.8, validate_ratio=0.1, test_ratio=0.1)
 
-    train_loader = DataLoader(ds_train, batch_size=128)
-    val_loader = DataLoader(ds_validate, batch_size=128)
-    test_loader = DataLoader(ds_test, batch_size=128)
+    train_loader = DataLoader(ds_train, batch_size=args.batch_size)
+    val_loader = DataLoader(ds_validate, batch_size=args.batch_size)
+    test_loader = DataLoader(ds_test, batch_size=args.batch_size)
 
     # ------------
     # model
     # ------------
-    net = BasicCNN()
-    model = MaskClassifier(net, learning_rate=0.0001)
+    net = MobileNetV2()
+    model = MaskClassifier(net, learning_rate=args.learning_rate)
 
     # ------------
     # training
     # ------------
-    checkpoint_callback = ModelCheckpoint(
-        verbose=True,
-        monitor='test_acc',
-        mode='max'
-    )
-    trainer = Trainer(max_epochs=1, checkpoint_callback=checkpoint_callback)
-    trainer.fit(model, train_loader, val_loader)
+    trainer = Trainer.from_argparse_args(args)
+    result = trainer.fit(model, train_loader, val_loader)
 
     # ------------
     # testing
