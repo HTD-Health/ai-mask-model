@@ -13,6 +13,8 @@ from models.basic_cnn import BasicCNN
 from models.mobile_net_v2 import MobileNetV2
 from datasets.masked_face_net import MaskedFaceNetDataset
 
+from datetime import datetime
+
 
 class MaskClassifier(LightningModule):
     def __init__(self, net, learning_rate=0.001):
@@ -112,6 +114,12 @@ def cli_main():
     # ------------
     result = trainer.test(test_dataloaders=test_loader)
     print(result)
+
+    # ------------
+    # saving model checkpoint
+    # ------------
+    now = datetime.now()
+    trainer.save_checkpoint("../model_checkpoints/model_checkpoint_" + now.strftime("%d/%m/%Y_%H:%M:%S"))
 
 
 if __name__ == '__main__':
