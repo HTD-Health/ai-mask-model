@@ -192,12 +192,3 @@ Outputs:
   MLflowUserSecretKey:
     Value: !GetAtt MLflowUserKey.SecretAccessKey
     Description: MLflow AWS CLI user - Secret Access Key
-
-
-
-
-exec mlflow server \
-    --backend-store-uri postgresql://mlflow_user:mlflow@localhost/mlflow_db \
-    --default-artifact-root s3://htd-smart-mirror-mlflow-bucket \
-    -h 0.0.0.0 \
-    -p 80
