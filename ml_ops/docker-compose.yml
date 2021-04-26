@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=mlflow_db
+      - POSTGRES_PASSWORD=mlflow
+
+  mlflow:
+    # build:
+    #   context: ./mlflow
+    image: 573518775438.dkr.ecr.us-east-2.amazonaws.com/mlflow:1.14.1
+    ports:
+      - 80:80
+    environment:
+      - ARTIFACTS_BUCKET_NAME
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=mlflow_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=mlflow
+    depends_on:
+      - db

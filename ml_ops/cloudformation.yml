@@ -1,0 +1,203 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: EC2 + EBS + EIP template running self-hosted ML Flows env with local Postgres DB and remote S3 artifact storage.
+
+Parameters:
+
+  EC2Password:
+    Type: String
+    NoEcho: true
+    Default: 'password123'
+
+  # Use AWS params to get the newest Linux AMI
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-arm64-gp2'
+
+Resources:
+
+  # Bucket for storing MLflow artifacts and the dataset
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: htd-smart-mirror-mlflow-bucket
+
+  # User with CLI-access only, used to push to S3 from local code (local training, update of datasets)
+  MLflowUser:
+    Type: AWS::IAM::User
+    Properties: 
+      UserName: MLflowUser
+
+  # CLI credentials for the user
+  MLflowUserKey:
+    Type: AWS::IAM::AccessKey
+    Properties: 
+      UserName: !Ref MLflowUser
+
+  # EC2 Role that could be assumed by the instance (to avoid hardcoding credentials)
+  MLflowRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+
+  # Instance Profile with MLflowRole
+  MLflowInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref MLflowRole
+
+  # Policy to access S3 bucket - used both by EC2 (as Role) and devs (as User Policy)
+  S3AccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: MLflowBucketPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 's3:ListAllMyBuckets'
+            Resource: 'arn:aws:s3:::*'  
+          - Effect: Allow
+            Action: 's3:*'
+            Resource:
+              - !Sub "${S3Bucket.Arn}"
+              - !Sub "${S3Bucket.Arn}/*"
+      Roles:
+        - !Ref MLflowRole
+      Users:
+        - !Ref MLflowUser
+
+  # Policy to access ECR Docker registry - used only by EC2 (as Role) to pull MLflow image
+  ECRAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: MLflowECRPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ecr:GetAuthorizationToken"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:GetRepositoryPolicy"
+              - "ecr:DescribeRepositories"
+              - "ecr:ListImages"
+              - "ecr:DescribeImages"
+              - "ecr:BatchGetImage"
+              - "ecr:GetLifecyclePolicy"
+              - "ecr:GetLifecyclePolicyPreview"
+              - "ecr:ListTagsForResource"
+              - "ecr:DescribeImageScanFindings"
+            Resource: '*'  
+      Roles:
+        - !Ref MLflowRole
+
+  # SG settings for EC2 - allow SSH and HTTP
+  MLflowServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow all connections to HTTP and SSH
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  # EC2 with Postgres DB and MLflow, configured to use the S3 above as Artifact Storage
+  MLflowServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t4g.small
+      ImageId: !Ref LatestAmiId
+      IamInstanceProfile: !Ref MLflowInstanceProfile
+      SecurityGroups:
+        - !Ref MLflowServerSecurityGroup
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            yum -y update
+
+            # Create password for EC2 to skip SSH key creation (we don't need security for now)
+            sed 's/PasswordAuthentication no/PasswordAuthentication yes/' -i /etc/ssh/sshd_config
+            systemctl restart sshd
+            service sshd restart
+            echo "${EC2Password}" | passwd --stdin ec2-user
+
+            # Install Docker
+            amazon-linux-extras install docker -y
+            service docker start
+            usermod -a -G docker ec2-user
+            systemctl enable docker
+
+            # Install Docker-compose
+            curl -L "https://github.com/docker/compose/releases/download/1.29.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose
+            ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+            # Prepare Docker-compose.yml file (can't include files in CFN template)
+            git clone https://github.com/HTD-Health/ai-mask-model.git
+            cd ai-mask-model
+            git checkout feature/ml-ops
+            cd ml_ops
+
+            # Pull MLflow image from ECR
+            aws ecr get-login-password \
+              --region us-east-2 \
+              --profile smart-mirror \
+            | docker login \
+              --username AWS \
+              --password-stdin 573518775438.dkr.ecr.us-east-2.amazonaws.com
+
+            echo "ARTIFACTS_BUCKET_NAME=${S3Bucket}" > .env
+            docker-compose up -d
+
+          - S3Bucket: !Ref S3Bucket
+         
+  # ElasticIP for EC2 - to keep the static IP address, because by default after each reboot IP could change.
+  MLflowServerEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref MLflowServer
+
+Outputs:
+
+  MLflowServerUrl:
+    Value: !Join [':', [!Ref MLflowServerEIP, '80']]
+    Description: MLflow server URL (settable in the Python code)
+
+  S3BucketName:
+    Value: !Ref S3Bucket
+    Description: S3 Bucket name
+  
+  MLflowUserAccessToken:
+    Value: !Ref MLflowUserKey
+    Description: MLflow AWS CLI user - Access Token
+
+  MLflowUserSecretKey:
+    Value: !GetAtt MLflowUserKey.SecretAccessKey
+    Description: MLflow AWS CLI user - Secret Access Key
+
+
+
+
+exec mlflow server \
+    --backend-store-uri postgresql://mlflow_user:mlflow@localhost/mlflow_db \
+    --default-artifact-root s3://htd-smart-mirror-mlflow-bucket \
+    -h 0.0.0.0 \
+    -p 80
