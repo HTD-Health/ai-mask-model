@@ -1,9 +1,8 @@
 import os
-
 import pandas as pd
+from PIL import Image
 from pathlib import Path
 from tqdm import tqdm
-from PIL import Image
 
 DATASET_PATH = Path('./data/dataset')
 CATEGORIES = {'no_mask': 0, 'mask': 1}

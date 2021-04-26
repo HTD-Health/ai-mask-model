@@ -1,17 +1,17 @@
-from argparse import ArgumentParser
-
 import torch
-from torch.nn.functional import binary_cross_entropy
-from torch.utils.data import DataLoader, random_split
-from torch.optim import Adam
+from argparse import ArgumentParser
+from datetime import datetime
 from pytorch_lightning import LightningModule, Trainer, seed_everything
-from pytorch_lightning.metrics import Recall
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.metrics import Recall
+from torch.nn.functional import binary_cross_entropy
+from torch.optim import Adam
+from torch.utils.data import DataLoader, random_split
 
-from utils import train_val_test_split
+from datasets.masked_face_net import MaskedFaceNetDataset
 from models.basic_cnn import BasicCNN
 from models.mobile_net_v2 import MobileNetV2
-from datasets.masked_face_net import MaskedFaceNetDataset
+from utils import train_val_test_split
 
 
 class MaskClassifier(LightningModule):
@@ -112,6 +112,12 @@ def cli_main():
     # ------------
     result = trainer.test(test_dataloaders=test_loader)
     print(result)
+
+    # ------------
+    # saving model checkpoint
+    # ------------
+    now = datetime.now()
+    trainer.save_checkpoint("../model_checkpoints/model_checkpoint_" + now.strftime("%d/%m/%Y_%H:%M:%S"))
 
 
 if __name__ == '__main__':
