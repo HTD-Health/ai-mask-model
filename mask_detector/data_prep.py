@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 from PIL import Image
 from pathlib import Path
@@ -39,7 +38,7 @@ def prepare_data():
 print('Preparing data...')
 df = prepare_data()
 
-print(f'Saving dataframe...')
+print('Saving dataframe...')
 df.to_csv('./data/dataframe/mask_df.csv', index=False)
 
 print('Done')

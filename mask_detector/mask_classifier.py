@@ -1,15 +1,12 @@
-import torch
 from argparse import ArgumentParser
 from datetime import datetime
-from pytorch_lightning import LightningModule, Trainer, seed_everything
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning import (LightningModule, Trainer, seed_everything)
 from pytorch_lightning.metrics import Recall
 from torch.nn.functional import binary_cross_entropy
 from torch.optim import Adam
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import (DataLoader, random_split)
 
 from datasets.masked_face_net import MaskedFaceNetDataset
-from models.basic_cnn import BasicCNN
 from models.mobile_net_v2 import MobileNetV2
 from utils import train_val_test_split
 
@@ -58,7 +55,7 @@ class MaskClassifier(LightningModule):
         return loss
 
     def configure_optimizers(self):
-        # self.hparams available because we called self.save_hyperparameters()
+        # self.hparams is available because we called self.save_hyperparameters()
         return Adam(self.parameters(), lr=self.learning_rate)
 
     @staticmethod
@@ -87,7 +84,7 @@ def cli_main():
     # data
     # ------------
     dataset = MaskedFaceNetDataset(
-        csv_file='data/dataframe/mask_df.csv', image_size=args.image_size)
+        csv_file='./data/dataframe/mask_df.csv', image_size=args.image_size)
     ds_train, ds_validate, ds_test = train_val_test_split(
         dataset, train_ratio=0.8, validate_ratio=0.1, test_ratio=0.1)
 

@@ -1,13 +1,9 @@
-""" Dataset module
-"""
-import cv2
 import torch
-import numpy as np
 import pandas as pd
 
 from PIL import Image
 from torch.utils.data.dataset import Dataset
-from torchvision.transforms import CenterCrop, Compose, Normalize, Resize, ToPILImage, ToTensor
+from torchvision.transforms import (CenterCrop, Compose, Normalize, Resize, ToPILImage, ToTensor)
 
 
 class MaskedFaceNetDataset(Dataset):
