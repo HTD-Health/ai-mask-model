@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import pandas as pd
 from PIL import Image
-from pathlib import Path
 from tqdm import tqdm
 
 DATASET_PATH = Path('./data/dataset')

@@ -1,10 +1,11 @@
 from argparse import ArgumentParser
 from datetime import datetime
+
 from pytorch_lightning import (LightningModule, Trainer, seed_everything)
 from pytorch_lightning.metrics import Recall
 from torch.nn.functional import binary_cross_entropy
 from torch.optim import Adam
-from torch.utils.data import (DataLoader, random_split)
+from torch.utils.data import (DataLoader)
 
 from datasets.masked_face_net import MaskedFaceNetDataset
 from models.mobile_net_v2 import MobileNetV2

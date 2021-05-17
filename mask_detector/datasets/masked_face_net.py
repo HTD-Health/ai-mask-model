@@ -1,9 +1,8 @@
-import torch
 import pandas as pd
-
+import torch
 from PIL import Image
 from torch.utils.data.dataset import Dataset
-from torchvision.transforms import (CenterCrop, Compose, Normalize, Resize, ToPILImage, ToTensor)
+from torchvision.transforms import (CenterCrop, Compose, Normalize, Resize, ToTensor)
 
 
 class MaskedFaceNetDataset(Dataset):
