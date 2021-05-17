@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='mask_model',
+    name='maskmodel',
     version='0.1',
     description='Model for mask detector.',
     author='HTD_AI_Team',
