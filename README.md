@@ -70,3 +70,6 @@ Repository is under path `home/pi/Workplace/ai-smart-mirror`
 To make changes (like changing branch) you need to run the command as `superuser`.
 To make it be you need to type `su pi` (and execute this command) and after that enter the appropriate password.
 Quick guide: `https://docs.dataplicity.com/docs/superuser`
+
+### How to install
+To install this library just run in `ai-mask-model` folder command `pip install -e .` when you are in the right virtual environment.
