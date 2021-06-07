@@ -19,6 +19,7 @@ def verify_image(img_path):
 
 
 def prepare_data():
+    # TODO: add docstrings
     dataset_list = []
 
     for category in CATEGORIES:

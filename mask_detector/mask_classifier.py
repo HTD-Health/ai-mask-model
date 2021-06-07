@@ -13,6 +13,7 @@ from mask_detector.utils import train_val_test_split
 
 
 class MaskClassifier(LightningModule):
+    # TODO: add docstrings
     def __init__(self, net, learning_rate=0.001):
         super().__init__()
         self.net = net
@@ -20,9 +21,12 @@ class MaskClassifier(LightningModule):
         self.recall = Recall()
 
     def forward(self, x):
+        # TODO: add docstrings
         return self.net(x)
 
+    # TODO: resolve lack of usage of batch_idx
     def training_step(self, batch, batch_idx):
+        # TODO: add docstrings
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
@@ -33,7 +37,9 @@ class MaskClassifier(LightningModule):
 
         return loss
 
+    # TODO: resolve lack of usage of batch_idx
     def validation_step(self, batch, batch_idx):
+        # TODO: add docstrings
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
@@ -44,7 +50,9 @@ class MaskClassifier(LightningModule):
 
         return loss
 
+    # TODO: resolve lack of usage of batch_idx
     def test_step(self, batch, batch_idx):
+        # TODO: add docstrings
         x, y = batch
         out = self.net(x)
         loss = binary_cross_entropy(out, y)
@@ -56,17 +64,19 @@ class MaskClassifier(LightningModule):
         return loss
 
     def configure_optimizers(self):
-        # self.hparams is available because we called self.save_hyperparameters()
+        # TODO: add docstrings
         return Adam(self.parameters(), lr=self.learning_rate)
 
     @staticmethod
     def add_model_specific_args(parent_parser):
+        # TODO: add docstrings
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument('--learning_rate', type=float, default=0.001)
         return parser
 
 
 def cli_main():
+    # TODO: add docstrings
     seed_everything(1234)
 
     # ------------
