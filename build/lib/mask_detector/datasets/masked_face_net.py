@@ -6,7 +6,6 @@ from torchvision.transforms import (CenterCrop, Compose, Normalize, Resize, ToTe
 
 
 class MaskedFaceNetDataset(Dataset):
-    # TODO: add docstrings
     def __init__(self, csv_file, image_size):
         self.data_frame = pd.read_csv(csv_file)
 
