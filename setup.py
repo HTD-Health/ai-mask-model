@@ -9,9 +9,9 @@ setup(
     packages=find_packages(include=['mask_detector', 'mask_detector.*']),
     install_requires=[
         'numpy==1.19.5',
-        'pytorch-lightning',
-        'torch',
-        'torchvision',
+        'pytorch-lightning==1.1.4',
+        'torch==1.7.1',
+        'torchvision==0.8.2',
         'tqdm==4.56.0',
         'pandas==1.2.0',
         'scikit-learn==0.24.0',

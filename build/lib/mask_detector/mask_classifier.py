@@ -5,11 +5,11 @@ from pytorch_lightning import (LightningModule, Trainer, seed_everything)
 from pytorch_lightning.metrics import Recall
 from torch.nn.functional import binary_cross_entropy
 from torch.optim import Adam
-from torch.utils.data import DataLoader
+from torch.utils.data import (DataLoader)
 
-from mask_detector.datasets.masked_face_net import MaskedFaceNetDataset
-from mask_detector.models.mobile_net_v2 import MobileNetV2
-from mask_detector.utils import train_val_test_split
+from datasets.masked_face_net import MaskedFaceNetDataset
+from models.mobile_net_v2 import MobileNetV2
+from utils import train_val_test_split
 
 
 class MaskClassifier(LightningModule):
