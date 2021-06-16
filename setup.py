@@ -11,11 +11,11 @@ setup(
         'numpy==1.20.3',
         'torch==1.8.1',
         'torchvision==0.9.1',
-        'pytorch-lightning==1.3.4',
-        'tqdm==4.41.0',
         'pandas==1.2.4',
         'scikit-learn==0.24.2',
         'pillow==8.2.0',
         'opencv-python==4.5.2.54'
+        'pytorch-lightning==1.3.4',
+        'tqdm==4.41.0',
     ]
 )
