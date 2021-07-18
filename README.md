@@ -6,24 +6,38 @@
 2. Move the content to get the following directory structure:
 
 ```
-├── mask_detector
+├── ai-mask-model
 │   ├── data                        <- All your data modules should be located here!
-│   │   ├── dataset                 <- Whole dataset
-│   │   │   ├── mask                <- Part of the dataset containing properly masked faces
-│   │   │   │   ├── 00000           <- Dataset chunk containing images
-│   │   │   │   │   ├── 00001.jpg   <- Image
-│   │   │   │   │   ├── 00002.jpg
-│   │   │   │   │   └── ...
-│   │   │   │   ├── 01000
-│   │   │   │   └── ...
-│   │   │   └── no_mask             <- Part of the dataset containing incorrectly masked faces
-│   │   │       ├── 00000           <- Dataset chunk containing images
-│   │   │       │   ├── 00001.jpg   <- Image
-│   │   │       │   ├── 00002.jpg
-│   │   │       │   └── ...
-│   │   │       ├── 01000
-│   │   │       └── ...
-│   │   └── dataframe               <- Place to store generated dataframes
+│   │   ├── dataframe               <- Place to store JSON with mapping data calsses
+│   │   │
+│   │   └── dataset                 <- Whole dataset
+│   │       ├── test                
+│   │       │   ├── 0               <- Part of the dataset containing unproperly masked faces
+│   │       │   │   ├── 00001.jpg   <- Image
+│   │       │   │   ├── 00002.jpg
+│   │       │   │   └── ...
+│   │       │   └── 1               <- Part of the dataset containing properly masked faces
+│   │       │       ├── 00001.jpg   <- Image
+│   │       │       ├── 00002.jpg
+│   │       │       └── ...
+│   │       ├── train
+│   │       │   ├── 0               <- Part of the dataset containing unproperly masked faces
+│   │       │   │   ├── 00001.jpg   <- Image
+│   │       │   │   ├── 00002.jpg
+│   │       │   │   └── ...
+│   │       │   └── 1               <- Part of the dataset containing properly masked faces
+│   │       │       ├── 00001.jpg   <- Image
+│   │       │       ├── 00002.jpg
+│   │       │       └── ...
+│   │       └── valid
+│   │           ├── 0               <- Part of the dataset containing unproperly masked faces
+│   │           │   ├── 00001.jpg   <- Image
+│   │           │   ├── 00002.jpg
+│   │           │   └── ...
+│   │           └── 1               <- Part of the dataset containing properly masked faces
+│   │               ├── 00001.jpg   <- Image
+│   │               ├── 00002.jpg
+│   │               └── ...
 │   └── ...
 └── ...
 
@@ -42,14 +56,16 @@ cd ai-smart-mirror
 pip install -r requirements.txt
 ```
 
-Next, navigate to any file and run it.
+Next, just train the model by running:
 
 ```bash
-# module folder
-cd mask_detector
+python train.py data/datasets/
+```
 
-# run module
-python mask_classifier.py
+When you finish training your network, to use it just type:
+
+```bash
+python predict.py path_to_image_to_check.jpg
 ```
 
 ## Raspberry Pi 3
@@ -70,3 +86,6 @@ Repository is under path `home/pi/Workplace/ai-smart-mirror`
 To make changes (like changing branch) you need to run the command as `superuser`.
 To make it be you need to type `su pi` (and execute this command) and after that enter the appropriate password.
 Quick guide: `https://docs.dataplicity.com/docs/superuser`
+
+### How to install
+To install this library just run in `ai-mask-model` folder command `pip install -e .` when you are in the right virtual environment.
