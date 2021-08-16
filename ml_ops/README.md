@@ -48,3 +48,10 @@ docker push 573518775438.dkr.ecr.us-east-2.amazonaws.com/mlflow
 
 version 1.15.0 is broken:
 https://github.com/mlflow/mlflow/issues/4208
+
+
+
+Connecting with MLflow EC2:
+```sh
+ssh -o PreferredAuthentications=password ec2-user@ec2-3-140-137-111.us-east-2.compute.amazonaws.com
+```
