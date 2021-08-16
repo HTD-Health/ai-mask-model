@@ -127,6 +127,9 @@ Resources:
       IamInstanceProfile: !Ref MLflowInstanceProfile
       SecurityGroups:
         - !Ref MLflowServerSecurityGroup
+      Tags: 
+        - Key: "Name"
+          Value: "MLflow Server"
       UserData:
         Fn::Base64: !Sub
           - |
@@ -140,29 +143,36 @@ Resources:
             echo "${EC2Password}" | passwd --stdin ec2-user
 
             # Install Docker
-            amazon-linux-extras install docker -y
+            amazon-linux-extras enable docker
+            yum install docker amazon-ecr-credential-helper -y
             service docker start
             usermod -a -G docker ec2-user
             systemctl enable docker
 
             # Install Docker-compose
-            curl -L "https://github.com/docker/compose/releases/download/1.29.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            cd /home/ec2-user
+            # curl -s --fail --show-error -L https://raw.githubusercontent.com/linuxserver/docker-docker-compose/master/run.sh -o /usr/local/bin/docker-compose
+            wget https://github.com/linuxserver/docker-docker-compose/releases/latest/download/docker-compose-arm64
+            mv docker-compose-arm64 /usr/local/bin/docker-compose
             chmod +x /usr/local/bin/docker-compose
             ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
             # Prepare Docker-compose.yml file (can't include files in CFN template)
+            yum install git -y
             git clone https://github.com/HTD-Health/ai-mask-model.git
             cd ai-mask-model
             git checkout feature/ml-ops
             cd ml_ops
 
+            # Setup ECR Credential Helper for Docker
+            echo '{"credsStore": "ecr-login"}' > ~/.docker/config.json
+
             # Pull MLflow image from ECR
-            aws ecr get-login-password \
-              --region us-east-2 \
-              --profile smart-mirror \
-            | docker login \
-              --username AWS \
-              --password-stdin 573518775438.dkr.ecr.us-east-2.amazonaws.com
+            # aws ecr get-login-password \
+            #   --region us-east-2 \
+            # | docker login \
+            #   --username AWS \
+            #   --password-stdin 573518775438.dkr.ecr.us-east-2.amazonaws.com
 
             echo "ARTIFACTS_BUCKET_NAME=${S3Bucket}" > .env
             docker-compose up -d

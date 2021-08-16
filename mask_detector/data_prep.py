@@ -26,7 +26,7 @@ def prepare_data():
         path = DATASET_PATH/category
         mask = CATEGORIES.get(category)  # 0 - no_mask, 1 - mask
 
-        for images_directory in tqdm(list(path.iterdir())):
+        for images_directory in tqdm([d for d in path.iterdir() if d.is_dir()]):
             for img_path in images_directory.iterdir():
                 if verify_image(img_path):
                     dataset_list.append({

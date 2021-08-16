@@ -4,6 +4,7 @@ WORKDIR /mlflow
 
 COPY requirements.txt requirements.txt
 
+RUN python -m pip install -U pip
 RUN pip install -r requirements.txt
 
 ARG PORT=${PORT:-80} \
@@ -28,5 +29,5 @@ ENTRYPOINT ["sh", "-c", "mlflow server \
     --host 0.0.0.0 \
     --port ${PORT} \
     --default-artifact-root s3://${ARTIFACTS_BUCKET_NAME} \
-    --backend-store-uri postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+    --backend-store-uri postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME} \
 "]

@@ -6,6 +6,8 @@ class MobileNetV2(Module):
     def __init__(self):
         super().__init__()
 
+        # Use pretained model
+        # See: https://pytorch.org/vision/stable/models.html
         net = torch.hub.load('pytorch/vision:v0.6.0',
                              'mobilenet_v2', pretrained=True)
 
